@@ -1,0 +1,72 @@
+- name: "Setting Drupal in ubuntu"
+  hosts: ubuntu
+  become: yes
+  vars_files:
+    - vars/installs.yaml
+    - vars/services.yaml
+    - vars/mariaDB.yaml
+
+  pre_tasks:
+
+    - name: "Updating cache"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+  tasks:
+
+    - name: "MariaDB: Set root password"
+      mysql_user:
+        login_user: root
+        login_password: "{{ root[0].password }}"
+        name: root
+        password: "{{ root[0].password }}"
+        host_all: yes
+
+    - name: "MariaDb: Remove anonymous users"
+      mysql_user:
+        name: ''
+        state: absent
+        host_all: yes
+        login_user: root
+        login_password: "{{ root[0].password }}"
+
+    - name: "MariaDB: Disallow root remote login"
+      mysql_user:
+        name: root
+        host: "{{ item }}"
+        state: absent
+        login_user: root
+        login_password: "{{ root[0].password }}"
+      loop:
+        - "{{ ansible_hostname }}"
+        - '::1'
+        - '%'
+
+    - name: "MariaDB: Remove test Database"
+      mysql_db:
+        name: test
+        state: absent
+        login_user: root
+        login_password: "{{ root[0].password }}"
+          
+    - name: "MariaDB: Create Drupal database"
+      mysql_db:
+        name: "{{ drupal_db[0].name }}"
+        state: present
+        login_user: root
+        login_password: "{{ root[0].password }}"
+
+    - name: "MariaDB: Create Drupal user"
+      mysql_user:
+        name: "{{ drupal_db[0].user }}"
+        password: "{{ drupal_db[0].password }}"
+        priv: "{{ drupal_db[0].name }}.*:ALL"
+        host: localhost
+        state: present
+        login_user: root
+        login_password: "{{ root[0].password }}"
+
+    - name: "MariaDB: Flush privileges"
+      command: mysql -u root -p{{ root[0].password }} -e "FLUSH PRIVILEGES;"
+  

@@ -1,0 +1,32 @@
+- name: "Setting Drupal in ubuntu"
+  hosts: ubuntu
+  become: yes
+  vars_files:
+    - vars/installs.yaml
+    - vars/services.yaml
+    - vars/mariaDB.yaml
+
+  pre_tasks:
+
+    - name: "Updating cache"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+  tasks:
+
+    - name: "Common: Installing stack"
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        "{{ softwares }}"
+
+    - name: "Starting services"
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - apache2
+        - mysql

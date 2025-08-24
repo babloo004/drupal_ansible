@@ -1,0 +1,26 @@
+- name: "Setting Drupal in ubuntu"
+  hosts: ubuntu
+  become: yes
+  vars_files:
+    - vars/installs.yaml
+    - vars/services.yaml
+    - vars/mariaDB.yaml
+
+  pre_tasks:
+
+    - name: "Updating cache"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: "Installing PyMySQL"
+      apt:
+        name: python3-pymysql
+        state: present
+
+  tasks:
+
+    - name: "PHP: Verifying PHP modules installation"
+      copy:
+        src: required/phpinfo.php
+        dest: /var/www/html/
