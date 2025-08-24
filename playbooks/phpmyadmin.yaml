@@ -1,0 +1,32 @@
+- name: "Setting up PHPmyAdmin"
+  hosts: ubuntu
+  become: yes
+  vars_files:
+    - ../vars/phpessentials.yaml
+  
+  pre_tasks:
+    - name: "updating cache"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+  
+  tasks:
+
+    - name: "apt: Installing phpmyadmin"
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ php_required }}"
+
+    - name: "php: Configuring phpMyAdmin"
+      file:
+        src: /etc/phpmyadmin/apache.conf
+        dest: /etc/apache2/conf-available/phpmyadmin.conf
+        state: link
+
+    - name: "shell: a2enconf"
+      command: a2enconf phpmyadmin.conf
+      notify: restart apache2
+
+  handlers:
+    - import_tasks: ../handlers/dp_handlers.yaml

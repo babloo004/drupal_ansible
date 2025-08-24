@@ -5,6 +5,7 @@
     - ../vars/installs.yaml
     - ../vars/services.yaml
     - ../vars/mariaDB.yaml
+    - ../vars/certbot.yaml
 
   pre_tasks:
 
@@ -44,3 +45,28 @@
         state: directory
         recurse: yes
         mode: '755'
+
+    - name: "file: creating drupal.conf file"
+      file:
+        path: /etc/apache2/sites-available/drupal.conf
+        state: touch
+
+    - name: "copy: copying content to config file"
+      copy:
+        src: ../required/drupal.conf
+        dest: /etc/apache2/sites-available/drupal.conf
+
+    - name: "Shell: Enable Drupal site"
+      command: a2ensite drupal.conf
+      notify: restart apache2
+
+    - name: "Sehll: Enable Apache rewrite module"
+      command: a2enmod rewrite
+      notify: restart apache2
+
+    - name: "Shell: Test Apache configuration"
+      command: apachectl -t
+      notify: restart apache2
+
+  handlers:
+    - import_tasks: ../handlers/dp_handlers.yaml
