@@ -1,0 +1,127 @@
+- name: "Setting Drupal in ubuntu"
+  hosts: ubuntu
+  become: yes
+  vars_files:
+    - vars/installs.yaml
+    - vars/services.yaml
+    - vars/mariaDB.yaml
+
+  pre_tasks:
+
+    - name: "Updating cache"
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: "Installing PyMySQL"
+      apt:
+        name: python3-pymysql
+        state: present
+
+  tasks:
+
+    - name: "Common: Installing stack"
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        "{{ softwares }}"
+
+    - name: "Starting services"
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - apache2
+        - mysql
+
+    - name: "PHP: Verifying PHP modules installation"
+      copy:
+        src: required/phpinfo.php
+        dest: /var/www/html/
+        
+    - name: "MariaDB: Set root password"
+      mysql_user:
+        login_user: root
+        login_password: "{{ root[0].password }}"
+        name: root
+        password: "{{ root[0].password }}"
+        host_all: yes
+
+    - name: "MariaDb: Remove anonymous users"
+      mysql_user:
+        name: ''
+        state: absent
+        host_all: yes
+        login_user: root
+        login_password: "{{ root[0].password }}"
+
+    - name: "MariaDB: Disallow root remote login"
+      mysql_user:
+        name: root
+        host: "{{ item }}"
+        state: absent
+        login_user: root
+        login_password: "{{ root[0].password }}"
+      loop:
+        - "{{ ansible_hostname }}"
+        - '::1'
+        - '%'
+
+    - name: "MariaDB: Remove test Database"
+      mysql_db:
+        name: test
+        state: absent
+        login_user: root
+        login_password: "{{ root[0].password }}"
+          
+    - name: "MariaDB: Create Drupal database"
+      mysql_db:
+        name: "{{ drupal_db[0].name }}"
+        state: present
+        login_user: root
+        login_password: "{{ root[0].password }}"
+
+    - name: "MariaDB: Create Drupal user"
+      mysql_user:
+        name: "{{ drupal_db[0].user }}"
+        password: "{{ drupal_db[0].password }}"
+        priv: "{{ drupal_db[0].name }}.*:ALL"
+        host: localhost
+        state: present
+        login_user: root
+        login_password: "{{ root[0].password }}"
+
+    - name: "MariaDB: Flush privileges"
+      command: mysql -u root -p{{ root[0].password }} -e "FLUSH PRIVILEGES;"
+
+    - name: "file: Creating drupal directory"
+      file:
+        path: /drupal/
+        state: directory
+
+    - name: "get_url: Downloading drupal"
+      get_url:
+        url: https://www.drupal.org/download-latest/tar.gz
+        dest: /drupal/drupal.tar.gz
+
+    - name: "file: creating drupal directory in /var/www/html/"
+      file:
+        path: /var/www/html/drupal/
+        state: directory
+
+    - name: "unarchive: unarchiving tar files"
+      unarchive:
+        src: /drupal/drupal.tar.gz
+        dest: /var/www/html/drupal/
+        remote_src: yes
+
+    - name: "file: changing access to /var/www/html/drupal/"
+      file:
+        path: /var/www/html/drupal/
+        owner: "www-data"
+        group: "www-data"
+        state: directory
+        recurse: yes
+        mode: '755'

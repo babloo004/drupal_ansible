@@ -1,0 +1,22 @@
+softwares:
+  - apache2
+  - mariadb-server
+  - mariadb-client
+  - php
+  - libapache2-mod-php
+  - php-cli
+  - php-fpm
+  - php-json
+  - php-common
+  - php-mysql
+  - php-zip
+  - php-gd
+  - php-intl
+  - php-mbstring
+  - php-curl
+  - php-xml
+  - php-pear
+  - php-tidy
+  - php-soap
+  - php-bcmath
+  - php-xmlrpc

@@ -1,0 +1,3 @@
+services:
+  - apache2
+  - mysql

@@ -1,0 +1,9 @@
+root:
+  - { password: "Avi@8358" }
+
+drupal_db:
+  - {
+    name: "drupal",
+    user: "drupal",
+    password: "Avi@8358"
+    }
