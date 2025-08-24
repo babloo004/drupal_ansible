@@ -1,10 +1,10 @@
-- name: "Setting Drupal in ubuntu"
+- name: "Setting up PHP"
   hosts: ubuntu
   become: yes
   vars_files:
-    - vars/installs.yaml
-    - vars/services.yaml
-    - vars/mariaDB.yaml
+    - ../vars/installs.yaml
+    - ../vars/services.yaml
+    - ../vars/mariaDB.yaml
 
   pre_tasks:
 
@@ -22,5 +22,5 @@
 
     - name: "PHP: Verifying PHP modules installation"
       copy:
-        src: required/phpinfo.php
+        src: ../required/phpinfo.php
         dest: /var/www/html/

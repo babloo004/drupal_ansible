@@ -1,10 +1,10 @@
-- name: "Setting Drupal in ubuntu"
+- name: "Setting up mariaDB"
   hosts: ubuntu
   become: yes
   vars_files:
-    - vars/installs.yaml
-    - vars/services.yaml
-    - vars/mariaDB.yaml
+    - ../vars/installs.yaml
+    - ../vars/services.yaml
+    - ../vars/mariaDB.yaml
 
   pre_tasks:
 

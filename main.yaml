@@ -1,0 +1,7 @@
+---
+
+- import_playbook: playbooks/setup.yaml
+- import_playbook: playbooks/php.yaml
+- import_playbook: playbooks/mariaDB.yaml
+- import_playbook: playbooks/drupal.yaml
+
