@@ -7,4 +7,5 @@
 - ssh-add "private-key-path"
 - ssh -T git@github.com
 
-
+### other branches
+- jenkins - related to jenkins setup
